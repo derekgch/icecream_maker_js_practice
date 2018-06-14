@@ -17,7 +17,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
 getIcecreams().then(addAll(appToMain))
 .then( () => {
-    getIngredients().then(addAll(populateIng)).then(iceCreamForm);
+    getIngredients().then(addAll(populateIng))
+    .then(iceCreamForm)
+    .then(submitForm);
 });
 
 mainPan.addEventListener('click', event =>{
@@ -37,10 +39,47 @@ mainPan.addEventListener('click', event =>{
 
 })//mainPan eventlistener
 
+
+function submitForm() {
+    const submitBtn = document.getElementById('create icecream btn');
+    let inputs = iceForm.firstElementChild.getElementsByTagName('input')
+    let newIce = {name:"", ingredients:[]};
+    let newIng = null;
+    submitBtn.addEventListener('click', event => {
+        [...inputs].forEach(e => {
+            if (e.type === 'text') {
+                if(e.id === 'new icecream name'){newIce.name = e.value};
+                if(e.id === 'new Ingredient'){newIng = e.value};
+            } else if(e.type === 'checkbox') {
+                if(e.checked){ newIce.ingredients.push(e.id)}
+            }
+        })
+        if(newIng){
+            postIngredient(newIng).then(d => {
+                newIng = d; 
+                debugger;
+                ingredients.push(newIng);
+                newIce.ingredients.push(newIng.id);
+            }).then(()=>{
+                postIcecream(newIce);
+            })
+        }else{
+            postIcecream(newIce);
+        }
+
+
+
+    })//submitBtn.addEventListener
+
+
+
+    
+}
     function delIceCream(event) {
         let iceId = event.target.dataset.trainerId;
         let iceCream = document.getElementById(`ice ${iceId}`);
         iceCream.remove();
+        deleteIceCream(iceId);
         // debugger; remove from database
     }
 
@@ -48,7 +87,10 @@ mainPan.addEventListener('click', event =>{
         let ingID = event.target.dataset.id;
         let liToDel = event.target.parentElement;
         let iceId = event.target.parentElement.parentElement.dataset.iceId;
+        let changedIce = iceCreams.find(e => {return e.id == iceId;})
+        changedIce.ingredients.splice(changedIce.ingredients.indexOf(ingID),1);
         liToDel.remove();
+        patchIcecream(changedIce)
         // debugger; remove from database
         
     }
@@ -73,8 +115,23 @@ mainPan.addEventListener('click', event =>{
 
   function iceCreamForm(){
     let newForm = document.createElement('form');
-    debugger;
-    let formHtml
+    
+    let formHtml = `Ice Cream Name:<input type="text" id="new icecream name"></input><br>
+    <div id="IngredientList">
+    ${genCheckbox()}
+    </div><br>
+    New Ingredient:<input type="text" id="new Ingredient"><br>
+    <button id="create icecream btn">Create Ice Cream</button>`
+    newForm.innerHTML = formHtml;
+    iceForm.appendChild(newForm); 
+
+  }
+
+  function genCheckbox(){
+      return ingredients.map(e => {
+        return `<input type="checkbox" id="${e.id}" name="${e.name}" value="${e.name}">
+        <label for="${e.name}">${e.name}</label>`
+      }).join();
   }
 
   function appToMain(iceCream){
@@ -103,19 +160,54 @@ mainPan.addEventListener('click', event =>{
 
 
 
-
-
-
-  function postIcecream() {
+function postIcecream(newIce, action = "POST") {
+    let config ={
+        method: action, 
+        headers: {
+            'Content-Type': 'application/JSON',
+            'Data-Type': 'application/JSON'
+        },
+        body: JSON.stringify({name: newIce.name, ingredients: newIce.ingredients})
+      }
+      return fetch(iceUrl, config).then(r => r.json())
       
-  }
-  function postIngredient() {
+}
+
+function patchIcecream(newIce) {
+    let config ={
+        method: "PATCH", 
+        headers: {
+            'Content-Type': 'application/JSON',
+            'Data-Type': 'application/JSON'
+        },
+        body: JSON.stringify({ingredients: newIce.ingredients})
+    }
+    return fetch(`${iceUrl}/${newIce.id}`, config).then(r => r.json())
       
+}
+
+
+
+function postIngredient(newIng) {
+      let config ={
+        method: 'POST', 
+        headers: {
+            'Content-Type': 'application/JSON',
+            'Data-Type': 'application/JSON'
+        },
+        body: JSON.stringify({name: newIng})
+      }
+      return fetch(inUrl, config).then(r => r.json())
 }
 
   function getIngredients(){
     return fetch(inUrl).then(r => r.json());
   }
+
+  function deleteIceCream(id){
+    return fetch(`${iceUrl}/${id}`, {method: "DELETE"}).then(r => r.json());
+  }
+
 
   function pushIngredient(e){
     // while(ingredients.length > 0){ingredients.pop()};

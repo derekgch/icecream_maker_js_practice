@@ -11,6 +11,22 @@
     {
       "name": "mint",
       "id": 3
+    },
+    {
+      "name": "wewe",
+      "id": 4
+    },
+    {
+      "name": "wewe",
+      "id": 5
+    },
+    {
+      "name": "milk",
+      "id": 6
+    },
+    {
+      "name": "nut",
+      "id": 7
     }
   ],
   "ice_creams": [
@@ -28,6 +44,24 @@
         1,
         2
       ]
+    },
+    {
+      "name": "all",
+      "ingredients": [
+        "3",
+        "6",
+        "7"
+      ],
+      "id": 3
+    },
+    {
+      "name": "milky milk",
+      "ingredients": [
+        "1",
+        "6",
+        "7"
+      ],
+      "id": 4
     }
   ]
 }
