@@ -19,7 +19,12 @@ getIcecreams().then(addAll(appToMain))
 .then( () => {
     getIngredients().then(addAll(populateIng))
     .then(iceCreamForm)
-    .then(submitForm);
+    .then(submitForm)
+    .then(() => {
+
+    // debugger;
+
+    });
 });
 
 mainPan.addEventListener('click', event =>{
@@ -46,6 +51,7 @@ function submitForm() {
     let newIce = {name:"", ingredients:[]};
     let newIng = null;
     submitBtn.addEventListener('click', event => {
+        event.preventDefault();
         [...inputs].forEach(e => {
             if (e.type === 'text') {
                 if(e.id === 'new icecream name'){newIce.name = e.value};
@@ -54,20 +60,25 @@ function submitForm() {
                 if(e.checked){ newIce.ingredients.push(e.id)}
             }
         })
-        if(newIng){
+        newIng = newIng.trim();
+
+        let uniqIng = ingredients.map(e => e.name);
+        if(uniqIng.indexOf(newIng) !== -1){newIng = null;}
+
+        if( newIng != null){
+
             postIngredient(newIng).then(d => {
-                newIng = d; 
                 debugger;
-                ingredients.push(newIng);
-                newIce.ingredients.push(newIng.id);
+                // newIng = d; 
+
+                ingredients.push(d);
+                newIce.ingredients.push(d.id);
             }).then(()=>{
                 postIcecream(newIce);
             })
         }else{
             postIcecream(newIce);
         }
-
-
 
     })//submitBtn.addEventListener
 
@@ -221,4 +232,13 @@ function postIngredient(newIng) {
     iceCreams.push(e)
   }
   
+//   function removeDup() {
+//     let uniqueIngs = Array.from(new Set(ingredients.map(e => e.name)));
+
+//     function(url){
+//         fetch(url, {method: "DELETE"});
+//     }
+//   }
+
+
 });
